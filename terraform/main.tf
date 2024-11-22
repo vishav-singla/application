@@ -137,9 +137,18 @@ resource "aws_eks_node_group" "eks_nodes" {
 
 # ALB Ingress Controller IAM Role
 resource "aws_iam_policy" "alb_ingress_controller_policy" {
-  name        = "AWSLoadBalancerControllerIAMPolicy"
-  description = "Policy for ALB ingress controller"
-  policy      = file("alb-ingress-controller-policy.json") # Ensure this file is available locally
+  name   = "alb-ingress-controller-policy" # Specify the policy name here
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "elasticloadbalancing:*"
+        Resource = "*"
+      },
+      # Add more statements as needed
+    ]
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "alb_policy_attach" {

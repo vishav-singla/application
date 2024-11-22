@@ -4,7 +4,9 @@ metadata:
   name: app-ingress
   namespace: app-tier2
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: app-ingress-group
 spec:
   rules:
   - host: app.local

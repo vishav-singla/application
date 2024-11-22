@@ -7,14 +7,16 @@ const App = () => {
     const [loading, setLoading] = useState(false);
     const [convertedFile, setConvertedFile] = useState(null);
     const [metadata, setMetadata] = useState(null);
+    const [password, setPassword] = useState(''); 
 
     const uploadFile = async () => {
         if (!file) return alert('Please upload a file!');
         setLoading(true);
-
+    
         const formData = new FormData();
         formData.append('file', file);
-
+        formData.append('password', password); // Append password
+    
         try {
             const response = await axios.post('http://localhost:8080/upload', formData);
             setConvertedFile(response.data.filename);
@@ -25,6 +27,7 @@ const App = () => {
             setLoading(false);
         }
     };
+    
 
     const fetchMetadata = async () => {
         if (!convertedFile) return alert('No file converted yet!');
@@ -64,6 +67,16 @@ const App = () => {
                             {file ? file.name : 'Choose a .docx file'}
                         </span>
                     </label>
+                </div>
+
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        placeholder="Optional PDF password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="block w-full border rounded-lg p-3 text-gray-800"
+                    />
                 </div>
                 
                 <button 
