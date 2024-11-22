@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN chmod +x /usr/bin/unoconv
 
-COPY package.json ./
+COPY package*.json ./
 
 RUN npm install
 

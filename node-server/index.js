@@ -1,9 +1,10 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { convert, resolvePaths } = require('docx2pdf-converter');
-const cors = require('cors');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { convert } from 'docx2pdf-converter';
+import muhammara from 'muhammara';
+import cors from 'cors';
 
 const app = express();
 const PORT = 8080;
@@ -14,10 +15,10 @@ const upload = multer({ dest: 'uploads/' });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
-        const inputPath = req.file.path; // Temporary file path
+        const inputPath = req.file.path;
         const outputPath = path.join('converted', `${req.file.originalname}.pdf`);
+        const password = req.body.password;
 
-        // Ensure the converted directory exists
         if (!fs.existsSync('converted')) {
             fs.mkdirSync('converted');
         }
@@ -25,16 +26,48 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         // Convert DOCX to PDF
         await convert(inputPath, outputPath);
 
+        if (password && password.trim() !== '') {
+            const source = fs.readFileSync(outputPath);
+            
+            const PDFRStreamForBuffer = muhammara.PDFRStreamForBuffer;
+            const PDFWStreamForBuffer = muhammara.PDFWStreamForBuffer;
+
+            const input = new PDFRStreamForBuffer(source);
+            const output = new PDFWStreamForBuffer();
+
+            muhammara.recrypt(input, output, {
+                password: password,
+                userPassword: password,
+                ownerPassword: password,
+                userProtectionFlag: 4
+            });
+
+            const encryptedOutputPath = path.join(
+                'converted',
+                `${req.file.originalname}-protected.pdf`
+            );
+
+            fs.writeFileSync(encryptedOutputPath, output.buffer);
+            fs.unlinkSync(outputPath);
+
+            res.json({
+                message: 'File converted and protected successfully',
+                filename: path.basename(encryptedOutputPath),
+            });
+        } else {
+            res.json({
+                message: 'File converted successfully',
+                filename: path.basename(outputPath),
+            });
+        }
+
         // Clean up the uploaded file
         fs.unlinkSync(inputPath);
-
-        res.json({ message: 'File converted successfully', filename: path.basename(outputPath) });
     } catch (error) {
         console.error('Error during conversion:', error);
         res.status(500).json({ error: 'Failed to convert file' });
     }
 });
-
 
 app.get('/metadata', (req, res) => {
     const filename = req.query.filename;
@@ -51,7 +84,6 @@ app.get('/metadata', (req, res) => {
         createdAt: stats.birthtime,
     });
 });
-
 
 app.get('/download', (req, res) => {
     const filename = req.query.filename;
