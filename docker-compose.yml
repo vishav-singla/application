@@ -1,0 +1,20 @@
+
+services:
+  backend:
+    build:
+      context: ./node-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/converted:/app/converted
+    environment:
+      NODE_ENV: production
+
+  frontend:
+    build:
+      context: ./react-client
+    ports:
+      - "5173:80"
+    environment:
+      REACT_APP_BACKEND_URL: "http://localhost:8080"
