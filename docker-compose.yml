@@ -11,10 +11,10 @@ services:
     environment:
       NODE_ENV: production
 
-  frontend:
-    build:
-      context: ./react-client
-    ports:
-      - "5173:80"
-    environment:
-      REACT_APP_BACKEND_URL: "http://localhost:8080"
+  # frontend:
+  #   build:
+  #     context: ./react-client
+  #   ports:
+  #     - "5173:80"
+  #   environment:
+  #     REACT_APP_BACKEND_URL: "http://localhost:8080"
